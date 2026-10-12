@@ -79,3 +79,50 @@ docker logs hello-service-container
 docker run -d -p 8080:8000 --name hello-service-container hello-service
 ```
 Тогда адрес: http://localhost:8080/
+
+## Docker Compose (режим разработки)
+В проекте есть `docker-compose.yml`. Он собирает образ с таргетом `dev`
+(gunicorn + uvicorn-воркер с автообновлением) и монтирует текущую папку
+в `/app` — код в контейнере обновляется сразу после сохранения файла,
+пересборка и перезапуск не нужны. За перезапуск воркера отвечает
+`--reload` и хук из `gunicorn-dev.py`.
+
+Запуск на переднем плане:
+```powershell
+docker compose up
+```
+
+Запуск в фоне:
+```powershell
+docker compose up -d
+```
+
+Проверка: http://localhost:8000/
+
+Ожидается:
+```json
+{"message":"hello world"}
+```
+
+Откройте `main.py`, поменяйте текст ответа и сохраните —
+обновите страницу, изменения применятся через пару секунд.
+
+Логи:
+```powershell
+docker compose logs -f
+```
+
+Остановка:
+```powershell
+docker compose down
+```
+
+Если изменился `requirements.txt`, нужна пересборка:
+```powershell
+docker compose up --build
+```
+
+Prod-образ собирается как раньше (таргет по умолчанию):
+```powershell
+docker build -t hello-service .
+```
